@@ -17,7 +17,22 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.post("/api/user/signup", handleUserSignUp);
+app.post("/api/users/signup", handleUserSignUp);
+app.post("/api/regions/:regionId/stores");
+app.post("/api/stores/:storeId/reviews");
+app.post("/api/stores/:storeId/missions");
+app.post("/api/missions/:missionId/challenge");
+
+app.use((err, req, res, next) => {
+  console.error(err);  // 로그 남기기
+  const status = err.status || 500;
+  res.status(status).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      status
+    }
+  });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
