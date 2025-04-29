@@ -14,3 +14,24 @@ export const createStore = async(req, res) => {
         next(err);
     }
 };
+
+export const createReview = async (req, res) => {
+    try {
+      const storeId = req.params.storeId;
+      const reviewDTO = new CreateReviewDTO(req.body);
+      
+      // 입력 데이터 검증
+      reviewDTO.validate();
+      
+      // 리뷰 추가
+      const review = await reviewService.addReview(storeId, reviewDTO);
+      
+      res.status(StatusCodes.CREATED).json({
+        status: 'success',
+        message: '리뷰가 성공적으로 추가되었습니다.',
+        data: review
+      });
+    } catch (err) {
+        next(err);
+    }
+  };
