@@ -1,7 +1,7 @@
 
 import { pool } from "../db.config.js";
 
-export const addStore = async (regionId, storeData) => {
+export const createStore = async (regionId, storeData) => {
     const conn = await pool.getConnection();
     
     try {
@@ -19,4 +19,17 @@ export const addStore = async (regionId, storeData) => {
     }
   };
 
-  
+export const getStoreById = async (storeId) => {
+  const conn = await pool.getConnection();
+  try{
+    const [rows] = await pool.query(
+      `SELECT * FROM store WHERE id = ?;`, [storeId]
+    );
+    
+    return rows.length > 0 ? rows[0] : null;
+  } catch(err){
+    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+  } finally {
+    conn.release();
+  }
+};
