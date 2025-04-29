@@ -5,3 +5,9 @@ export const bodyToMission = (body) => {
         missionSpec: body.missionSpec,
     }
 };
+
+export const bodyToChallengeMission = (body) => {
+    return{
+        userId: data.userId,
+    }
+};

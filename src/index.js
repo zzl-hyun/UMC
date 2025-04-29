@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { handleUserSignUp } from "./controllers/user.controller.js";
 import * as storeController from "./controllers/store.controller.js";
+import * as missionController from "./controllers/mission.controller.js";
 dotenv.config();
 
 const app = express();
@@ -21,7 +22,7 @@ app.post("/api/users/signup", handleUserSignUp);
 app.post("/api/regions/:regionId/stores", storeController.createStore);
 app.post("/api/stores/:storeId/reviews", storeController.createReview);
 app.post("/api/stores/:storeId/missions", storeController.createMission);
-app.post("/api/missions/:missionId/challenge");
+app.post("/api/missions/:missionId/challenge", missionController.challengeMission);
 
 app.use((err, req, res, next) => {
   console.error(err);  // 로그 남기기
