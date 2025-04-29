@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
 app.post("/api/users/signup", handleUserSignUp);
 app.post("/api/regions/:regionId/stores", storeController.createStore);
 app.post("/api/stores/:storeId/reviews", storeController.createReview);
-app.post("/api/stores/:storeId/missions");
+app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge");
 
 app.use((err, req, res, next) => {
