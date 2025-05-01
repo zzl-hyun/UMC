@@ -1,97 +1,113 @@
 import { pool } from "../db.config.js";
 
-export const createMission = async (storeId, missionData) => {
+// 미션 추가
+export const addMission = async (storeId, data) => {
   const conn = await pool.getConnection();
   
   try {
+    const deadlineDate = new Date(data.deadline);
+
     const [result] = await pool.query(
       `INSERT INTO mission (store_id, reward, deadline, mission_spec, created_at, updated_at) 
        VALUES (?, ?, ?, ?, NOW(), NOW());`,
-      [storeId, missionData.reward, missionData.deadline, missionData.missionSpec]
+      [storeId, data.reward, deadlineDate, data.missionSpec]
     );
     
     return result.insertId;
   } catch (err) {
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+    throw new Error(`미션 추가 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
   }
 };
 
+// 미션 조회
 export const getMissionById = async (missionId) => {
   const conn = await pool.getConnection();
   
   try {
-    const [rows] = await pool.query(
+    const [mission] = await pool.query(
       `SELECT m.*, s.name as store_name 
-       FROM mission m
-       JOIN store s ON m.store_id = s.id
+       FROM mission m 
+       JOIN store s ON m.store_id = s.id 
        WHERE m.id = ?;`,
       [missionId]
     );
     
-    return rows.length > 0 ? rows[0] : null;
+    if (mission.length === 0) {
+      return null;
+    }
+    
+    return mission[0];
   } catch (err) {
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+    throw new Error(`미션 조회 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
   }
 };
 
-export const checkAlreadyChallenging = async (memberId, missionId) => {
+// 사용자와 미션 ID로 이미 참여한 미션인지 확인
+export const getUserMissionByUserAndMission = async (userId, missionId) => {
   const conn = await pool.getConnection();
   
   try {
-    const [result] = await pool.query(
-      `SELECT EXISTS(
-        SELECT 1 FROM member_mission 
-        WHERE member_id = ? AND mission_id = ?
-      ) as already_challenging;`,
-      [memberId, missionId]
+    const [userMission] = await pool.query(
+      `SELECT * FROM user_mission WHERE user_id = ? AND mission_id = ?;`,
+      [userId, missionId]
     );
     
-    return result[0].already_challenging === 1;
+    if (userMission.length === 0) {
+      return null;
+    }
+    
+    return userMission[0];
   } catch (err) {
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+    throw new Error(`사용자 미션 조회 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
   }
 };
 
-export const challengeMission = async (memberId, missionId) => {
+// 사용자 미션 추가
+export const addUserMission = async (userId, missionId) => {
   const conn = await pool.getConnection();
   
   try {
     const [result] = await pool.query(
-      `INSERT INTO member_mission (member_id, mission_id, status, created_at, updated_at) 
+      `INSERT INTO user_mission (user_id, mission_id, status, created_at, updated_at) 
        VALUES (?, ?, '진행중', NOW(), NOW());`,
-      [memberId, missionId]
+      [userId, missionId]
     );
     
     return result.insertId;
   } catch (err) {
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+    throw new Error(`사용자 미션 추가 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
   }
 };
 
-export const getMemberMission = async (memberId, missionId) => {
+// 사용자 미션 상세 정보 조회
+export const getUserMissionWithDetails = async (userMissionId) => {
   const conn = await pool.getConnection();
   
   try {
-    const [rows] = await pool.query(
-      `SELECT mm.*, m.mission_spec, m.reward, m.deadline, s.name as store_name
-       FROM member_mission mm
-       JOIN mission m ON mm.mission_id = m.id
+    const [userMission] = await pool.query(
+      `SELECT um.*, m.reward, m.deadline, m.mission_spec, s.name as store_name
+       FROM user_mission um
+       JOIN mission m ON um.mission_id = m.id
        JOIN store s ON m.store_id = s.id
-       WHERE mm.member_id = ? AND mm.mission_id = ?;`,
-      [memberId, missionId]
+       WHERE um.id = ?;`,
+      [userMissionId]
     );
     
-    return rows.length > 0 ? rows[0] : null;
+    if (userMission.length === 0) {
+      return null;
+    }
+    
+    return userMission[0];
   } catch (err) {
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err})`);
+    throw new Error(`사용자 미션 조회 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
   }

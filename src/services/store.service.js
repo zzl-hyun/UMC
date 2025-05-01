@@ -1,15 +1,14 @@
-import * as storeRepository from '../repositories/store.repository';
-import * as regionRepository from '../repositories/region.repository';
+import { addStore, getStoreById } from "../repositories/store.repository.js";
+import { getRegionById } from "../repositories/region.repository.js";
+import { responseFromStore } from "../dtos/store.dto.js";
 
-export const createStore = async (regionId, StoreData) => {
+export const createStore = async (regionId, storeData) => {
     // 존재하는지
-    const region = await regionRepository.getRegionById(regionId);
+    const region = await getRegionById(regionId);
     if(!region) throw new Error('해당 지역을 찾을 수 없습니다.');
 
-    // Create Store
-    const storeId = await storeRepository.createStore(regionId, storeData);
+    const storeId = await addStore(regionId, storeData);
 
-    const store = await storeRepository.getStoreById(storeId);
-
-    return store;
+    const store = await getStoreById(storeId);
+    return responseFromStore(store);
 };
