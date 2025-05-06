@@ -72,17 +72,41 @@ export const getUserMissionByUserAndMission = async (userId, missionId) => {
 // 사용자 미션 추가
 export const addUserMission = async (userId, missionId) => {
   try {
-    const userMission = await prisma.user_mission.create({
-      data: {
-        user_id: BigInt(userId),
-        mission_id: BigInt(missionId),
-        status: '진행중',
-        created_at: new Date(),
-        updated_at: new Date()
+    return await prisma.$transaction(async (tx) => {
+      // 미션 존재 여부 먼저 확인
+      const mission = await tx.mission.findUnique({
+        where: { id: BigInt(missionId) }
+      });
+      
+      if (!mission) {
+        throw new Error("존재하지 않는 미션입니다.");
       }
+      
+      // 이미 참여한 미션인지 확인
+      const existingUserMission = await tx.user_mission.findFirst({
+        where: {
+          user_id: BigInt(userId),
+          mission_id: BigInt(missionId)
+        }
+      });
+      
+      if (existingUserMission) {
+        throw new Error("이미 참여한 미션입니다.");
+      }
+      
+      // 사용자 미션 추가
+      const userMission = await tx.user_mission.create({
+        data: {
+          user_id: BigInt(userId),
+          mission_id: BigInt(missionId),
+          status: '진행중',
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      });
+      
+      return userMission.id;
     });
-    
-    return userMission.id;
   } catch (err) {
     console.error(`사용자 미션 추가 오류: ${err.message}`);
     throw new Error(`사용자 미션 추가 중 오류가 발생했습니다: ${err.message}`);

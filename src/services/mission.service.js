@@ -27,18 +27,6 @@ export const createMission = async (storeId, missionData) => {
 
 
 export const challengeMission = async (missionId, userData) => {
-  // 해당 미션 존재 여부 확인
-  const mission = await getMissionById(missionId);
-  if (!mission) {
-    throw new Error("존재하지 않는 미션입니다.");
-  }
-  
-  // 이미 참여한 미션인지 확인
-  const existingUserMission = await getUserMissionByUserAndMission(userData.userId, missionId);
-  if (existingUserMission) {
-    throw new Error("이미 참여한 미션입니다.");
-  }
-  
   // 사용자 미션 참여 등록
   const userMissionId = await addUserMission(userData.userId, missionId);
   
