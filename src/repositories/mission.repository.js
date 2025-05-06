@@ -198,3 +198,41 @@ export const getUserMissions = async (userId, cursor = 0, status = '진행중') 
     throw new Error(`사용자 미션 목록 조회 중 오류가 발생했습니다: ${err.message}`);
   }
 };
+
+// 사용자 미션 상태 업데이트
+export const updateUserMissionStatus = async (userMissionId, status) => {
+  try {
+    const updatedUserMission = await prisma.user_mission.update({
+      where: {
+        id: BigInt(userMissionId)
+      },
+      data: {
+        status: status,
+        updated_at: new Date()
+      },
+      include: {
+        mission: {
+          include: {
+            store: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // 응답 형식 가공
+    return {
+      ...updatedUserMission,
+      reward: updatedUserMission.mission?.reward,
+      deadline: updatedUserMission.mission?.deadline,
+      mission_spec: updatedUserMission.mission?.mission_spec,
+      store_name: updatedUserMission.mission?.store?.name
+    };
+  } catch (err) {
+    console.error(`사용자 미션 상태 업데이트 오류: ${err.message}`);
+    throw new Error(`사용자 미션 상태 업데이트 중 오류가 발생했습니다: ${err.message}`);
+  }
+};

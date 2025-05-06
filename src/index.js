@@ -34,6 +34,7 @@ app.get("/api/stores/:storeId/reviews", storeController.handleListStoreReviews);
 app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge", missionController.challengeMission);
 app.get("/api/stores/:storeId/missions", storeController.handleListStoreMissions);
+app.patch("/api/missions/:userMissionId/status", missionController.UpdateMissionStatus); 
 
 app.use((err, req, res, next) => {
   console.error(err);  // 로그 남기기

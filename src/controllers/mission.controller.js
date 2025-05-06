@@ -19,3 +19,21 @@ export const challengeMission = async (req, res, next) => {
     next(err);
   }
 };
+
+// 미션 상태 업데이트
+export const UpdateMissionStatus = async (req, res, next) => {
+  try {
+    const userMissionId = parseInt(req.params.userMissionId);
+    const status = req.query.status || '완료';
+    
+    const result = await missionService.updateMissionStatus(userMissionId, status);
+    
+    res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: `미션 상태가 '${status}'(으)로 성공적으로 업데이트되었습니다.`,
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+};
