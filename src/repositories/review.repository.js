@@ -44,6 +44,7 @@ export const getReviewById = async (reviewId) => {
   }
 };
 
+// 가게의 리뷰 목록 조회
 export const getAllStoreReviews = async (storeId, cursor = 0) => {
   try {
     const reviews = await prisma.review.findMany({
@@ -64,5 +65,28 @@ export const getAllStoreReviews = async (storeId, cursor = 0) => {
   } catch (error) {
     console.error("Prisma 오류:", error);
     throw new Error(`상점 리뷰 조회 중 오류가 발생했습니다: ${error.message}`);
+  }
+};
+
+// 사용자가 작성한 리뷰 목록 조회
+export const getUserReviews = async (userId, cursor = 0) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { 
+        user_id: BigInt(userId),
+        ...(cursor > 0 && { id: { gt: BigInt(cursor) } })
+      },
+      include: {
+        store: true,
+        review_image: true
+      },
+      orderBy: { created_at: 'desc' },
+      take: 10,
+    });
+    
+    return reviews;
+  } catch (error) {
+    console.error("사용자 리뷰 조회 오류:", error);
+    throw new Error(`사용자 리뷰 조회 중 오류가 발생했습니다: ${error.message}`);
   }
 };

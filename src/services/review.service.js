@@ -1,6 +1,6 @@
-import { addReview, getReviewById } from "../repositories/review.repository.js";
+import { addReview, getReviewById, getUserReviews } from "../repositories/review.repository.js";
 import { getStoreById } from "../repositories/store.repository.js";
-import { responseFromSingleReview } from "../dtos/reiveiw.dto.js";
+import { responseFromSingleReview, responseFromReviews } from "../dtos/reiveiw.dto.js";
 
 export const createReview = async (storeId, reviewData) => {
   
@@ -19,4 +19,9 @@ export const createReview = async (storeId, reviewData) => {
   const review = await getReviewById(reviewId);
   
   return responseFromSingleReview(review);
+};
+
+export const listUserReviews = async (userId, cursor = 0) => {
+  const reviews = await getUserReviews(userId, cursor);
+  return responseFromReviews(reviews);
 };

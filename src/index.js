@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
-import { handleUserSignUp } from "./controllers/user.controller.js";
+import * as userController from "./controllers/user.controller.js";
 import * as storeController from "./controllers/store.controller.js";
 import * as missionController from "./controllers/mission.controller.js";
 dotenv.config();
@@ -22,8 +22,8 @@ app.get("/", (req, res) => {
 });
 
 // 사용자 관련
-app.post("/api/users/signup", handleUserSignUp);
-
+app.post("/api/users/signup", userController.handleUserSignUp);
+app.get("/api/users/:userId/reviews", userController.handleListUserReviews);
 // 지역 및 상점 관련
 app.post("/api/regions/:regionId/stores", storeController.createStore);
 // 리뷰 관련
