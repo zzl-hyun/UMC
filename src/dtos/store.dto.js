@@ -8,7 +8,7 @@ export const bodyToStore = (body) => {
 
 export const responseFromStore = (store) => {
     return {
-        id: store.id,
+        id: Number(store.id),
         name: store.name,
         address: store.address,
         score: store.score,

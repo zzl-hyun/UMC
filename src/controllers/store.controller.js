@@ -3,12 +3,12 @@ import * as storeService from '../services/store.service.js';
 import * as reviewService from '../services/review.service.js';
 import * as missionService from '../services/mission.service.js';
 import { bodyToStore } from '../dtos/store.dto.js';
-import { bodyToReview, responseFromReview } from '../dtos/reivew.dto.js';
+import { bodyToReview } from '../dtos/reiveiw.dto.js';
 import { bodyToMission } from '../dtos/mission.dto.js';
 
 export const createStore = async(req, res, next) => {
     try {
-        const regionId = req.params.regionId;
+        const regionId = parseInt(req.params.regionId);
         const store = await storeService.createStore(regionId, bodyToStore(req.body));
 
         res.status(StatusCodes.CREATED).json({ 
@@ -24,7 +24,7 @@ export const createStore = async(req, res, next) => {
 
 export const createReview = async (req, res, next) => {
     try {
-        const storeId = req.params.storeId;
+        const storeId = parseInt(req.params.storeId);
         
         // 리뷰 추가
         const review = await reviewService.createReview(storeId, bodyToReview(req.body));
@@ -41,7 +41,7 @@ export const createReview = async (req, res, next) => {
 
 export const createMission = async (req, res, next) => {
     try {
-        const storeId = req.params.storeId;
+        const storeId = parseInt(req.params.storeId);
 
         const mission = await missionService.createMission(storeId, bodyToMission(req.body));
 
@@ -56,14 +56,18 @@ export const createMission = async (req, res, next) => {
 };
 
 export const handleListStoreReviews = async (req, res, next) => {
-    try{
-        const reviews = await storeService.listStoreReivews(
-            parseInt(req.params.storeId),
-            typeof req.query.cursor === "string" ? parseInt(req.query.cursor) : 0
-        );
+    try {
+        const storeId = parseInt(req.params.storeId);
+        const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
         
-        res.status(StatusCodes.OK).json(reviews);
-    } catch (err){
+        const result = await storeService.listStoreReviews(storeId, cursor);
+        
+        res.status(StatusCodes.OK).json({
+            status: 'success',
+            message: '리뷰 목록을 성공적으로 조회했습니다.',
+            result
+        });
+    } catch (err) {
         next(err);
     }
 }

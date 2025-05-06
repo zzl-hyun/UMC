@@ -4,7 +4,9 @@ import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+  log: ['error', 'warn'],
+});
 
 export const pool = mysql.createPool({
   host: process.env.DB_HOST, // mysql의 hostname
