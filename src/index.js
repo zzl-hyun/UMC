@@ -24,6 +24,7 @@ app.get("/", (req, res) => {
 // 사용자 관련
 app.post("/api/users/signup", userController.handleUserSignUp);
 app.get("/api/users/:userId/reviews", userController.handleListUserReviews);
+app.get("/api/users/:userId/missions", userController.handleListUserMissions); 
 // 지역 및 상점 관련
 app.post("/api/regions/:regionId/stores", storeController.createStore);
 // 리뷰 관련

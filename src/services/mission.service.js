@@ -4,7 +4,8 @@ import {
   getUserMissionByUserAndMission, 
   addUserMission,
   getUserMissionWithDetails,
-  getStoreMissions
+  getStoreMissions,
+  getUserMissions
 } from "../repositories/mission.repository.js";
 import { getStoreById } from "../repositories/store.repository.js";
 import { responseFromMemberMission, responseFromMission } from "../dtos/mission.dto.js";
@@ -62,6 +63,20 @@ export const listStoreMissions = async (storeId, cursor = 0) => {
     data: missions.map(mission => responseFromMission(mission)),
     pagination: {
       cursor: missions.length ? Number(missions[missions.length - 1].id) : null
+    }
+  };
+};
+
+// 진행 중인 미션 목록 조회
+export const listUserMissions = async (userId, cursor = 0, status = '진행중') => {
+  // 사용자의 미션 목록 조회
+  const userMissions = await getUserMissions(userId, cursor, status);
+  
+  // 응답 데이터 구성
+  return {
+    data: userMissions.map(userMission => responseFromMemberMission(userMission)),
+    pagination: {
+      cursor: userMissions.length ? Number(userMissions[userMissions.length - 1].id) : null
     }
   };
 };

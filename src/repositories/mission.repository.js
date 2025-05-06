@@ -159,3 +159,42 @@ export const getStoreMissions = async (storeId, cursor = 0) => {
     throw new Error(`가게 미션 목록 조회 중 오류가 발생했습니다: ${err.message}`);
   }
 };
+
+// 사용자의 진행 중인 미션 목록 조회
+export const getUserMissions = async (userId, cursor = 0, status = '진행중') => {
+  try {
+    const userMissions = await prisma.user_mission.findMany({
+      where: {
+        user_id: BigInt(userId),
+        status: status,
+        ...(cursor > 0 && { id: { gt: BigInt(cursor) } })
+      },
+      include: {
+        mission: {
+          include: {
+            store: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { created_at: 'desc' },
+      take: 10
+    });
+    
+    // 응답 형식 가공
+    return userMissions.map(userMission => ({
+      ...userMission,
+      reward: userMission.mission?.reward,
+      deadline: userMission.mission?.deadline,
+      mission_spec: userMission.mission?.mission_spec,
+      store_name: userMission.mission?.store?.name,
+      store_id: userMission.mission?.store_id
+    }));
+  } catch (err) {
+    console.error(`사용자 미션 목록 조회 오류: ${err.message}`);
+    throw new Error(`사용자 미션 목록 조회 중 오류가 발생했습니다: ${err.message}`);
+  }
+};

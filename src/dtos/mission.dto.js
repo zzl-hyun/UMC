@@ -39,3 +39,4 @@ export const responseFromMemberMission = (memberMission) => {
         updatedAt: memberMission.updated_at
     };
 };
+

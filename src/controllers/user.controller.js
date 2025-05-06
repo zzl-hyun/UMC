@@ -2,6 +2,9 @@ import { StatusCodes } from "http-status-codes";
 import { bodyToUser } from "../dtos/user.dto.js";
 import { userSignUp } from "../services/user.service.js";
 import * as reviewService from "../services/review.service.js"
+import * as missionService from "../services/mission.service.js";
+
+
 export const handleUserSignUp = async (req, res, next) => {
   try{
 
@@ -28,6 +31,25 @@ export const handleListUserReviews = async (req, res, next) => {
       result
     });
   }catch (err){
+    next(err);
+  }
+};
+
+// 내가 진행 중인 미션 목록 조회
+export const handleListUserMissions = async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
+    const status = req.query.status || '진행중';
+    
+    const result = await missionService.listUserMissions(userId, cursor, status);
+    
+    res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: '내 미션 목록을 성공적으로 조회했습니다.',
+      result
+    });
+  } catch (err) {
     next(err);
   }
 };
