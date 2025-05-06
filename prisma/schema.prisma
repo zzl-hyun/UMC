@@ -18,6 +18,7 @@ model User {
   phoneNumber   String   @map("phone_number") @db.VarChar(15)
 
   userFavorCategories UserFavorCategory[]
+  reviews             UserStoreReview[]
 
   @@map("user")
 }
@@ -41,4 +42,24 @@ model UserFavorCategory {
   @@index([foodCategoryId], map: "f_category_id")
   @@index([userId], map: "user_id")
   @@map("user_favor_category")
+}
+
+model Store {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(100)
+
+  reviews UserStoreReview[]
+
+  @@map("store")
+}
+
+model UserStoreReview {
+  id      Int    @id @default(autoincrement())
+  store   Store  @relation(fields: [storeId], references: [id])
+  storeId Int    @map("store_id")
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int    @map("user_id")
+  content String @db.Text
+
+  @@map("user_store_review")
 }

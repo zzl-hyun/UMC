@@ -28,7 +28,7 @@ app.post("/api/users/signup", handleUserSignUp);
 app.post("/api/regions/:regionId/stores", storeController.createStore);
 // 리뷰 관련
 app.post("/api/stores/:storeId/reviews", storeController.createReview);
-
+app.get("/api/stores/:storeId/reviews", storeController.handleListStoreReviews);
 // 미션 관련
 app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge", missionController.challengeMission);

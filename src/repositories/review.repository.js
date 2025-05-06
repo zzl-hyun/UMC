@@ -1,4 +1,5 @@
-import { pool } from "../db.config.js";
+import { pool, prisma } from "../db.config.js";
+
 
 // 리뷰 추가
 export const addReview = async (data) => {
@@ -58,5 +59,29 @@ export const getReviewById = async (reviewId) => {
     throw new Error(`리뷰 조회 중 오류가 발생했습니다: ${err.message}`);
   } finally {
     conn.release();
+  }
+};
+
+export const getAllStoreReivews = async (storeId, cursor = 0) => {
+  try {
+    const reviews = await prisma.userStoreReview.findMany({
+      select: {
+        id: true,
+        content: true,
+        store: true,
+        user: true,
+      },
+      where: { 
+        storeId: parseInt(storeId), 
+        id: { gt: cursor }
+      },
+      orderBy: { id: "asc" },
+      take: 5,
+    });
+    
+    return reviews;
+  } catch (error) {
+    console.error("Prisma 오류:", error);
+    throw new Error(`상점 리뷰 조회 중 오류가 발생했습니다: ${error.message}`);
   }
 };

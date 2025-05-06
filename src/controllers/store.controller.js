@@ -3,7 +3,7 @@ import * as storeService from '../services/store.service.js';
 import * as reviewService from '../services/review.service.js';
 import * as missionService from '../services/mission.service.js';
 import { bodyToStore } from '../dtos/store.dto.js';
-import { bodyToReview } from '../dtos/reivew.dto.js';
+import { bodyToReview, responseFromReview } from '../dtos/reivew.dto.js';
 import { bodyToMission } from '../dtos/mission.dto.js';
 
 export const createStore = async(req, res, next) => {
@@ -54,3 +54,16 @@ export const createMission = async (req, res, next) => {
         next(err);
     }
 };
+
+export const handleListStoreReviews = async (req, res, next) => {
+    try{
+        const reviews = await storeService.listStoreReivews(
+            parseInt(req.params.storeId),
+            typeof req.query.cursor === "string" ? parseInt(req.query.cursor) : 0
+        );
+        
+        res.status(StatusCodes.OK).json(reviews);
+    } catch (err){
+        next(err);
+    }
+}

@@ -19,13 +19,19 @@ export const bodyToUser = (body) => {
  * @param {Array} preferences 
  */
 export const responseFromUser = ({user, preferences}) => {
-    const userData = user[0];
-    const prefeCategory = preferences.map(pref => pref.name);
+    // const userData = user[0];
+    // const prefeCategory = preferences.map(pref => pref.name);
+    const preferFoods = preferences.map(
+        preference => preference.foodCategory.name
+    );
 
     return{
-        email: userData.email,
-        name: userData.name,
-        prefeCategory
+        // email: userData.email,
+        // name: userData.name,
+        // prefeCategory
+        email: user.email,
+        name: user.name,
+        preferCategory: preferFoods,
     };
 
 };
