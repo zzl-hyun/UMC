@@ -1,114 +1,131 @@
-import { pool } from "../db.config.js";
+import { prisma } from "../db.config.js";
 
 // 미션 추가
 export const addMission = async (storeId, data) => {
-  const conn = await pool.getConnection();
-  
   try {
-    const deadlineDate = new Date(data.deadline);
-
-    const [result] = await pool.query(
-      `INSERT INTO mission (store_id, reward, deadline, mission_spec, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, NOW(), NOW());`,
-      [storeId, data.reward, deadlineDate, data.missionSpec]
-    );
+    const mission = await prisma.mission.create({
+      data: {
+        store_id: BigInt(storeId),
+        reward: data.reward,
+        deadline: new Date(data.deadline),
+        mission_spec: data.missionSpec,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
     
-    return result.insertId;
+    return mission.id;
   } catch (err) {
+    console.error(`미션 추가 오류: ${err.message}`);
     throw new Error(`미션 추가 중 오류가 발생했습니다: ${err.message}`);
-  } finally {
-    conn.release();
   }
 };
 
 // 미션 조회
 export const getMissionById = async (missionId) => {
-  const conn = await pool.getConnection();
-  
   try {
-    const [mission] = await pool.query(
-      `SELECT m.*, s.name as store_name 
-       FROM mission m 
-       JOIN store s ON m.store_id = s.id 
-       WHERE m.id = ?;`,
-      [missionId]
-    );
+    const mission = await prisma.mission.findUnique({
+      where: {
+        id: BigInt(missionId)
+      },
+      include: {
+        store: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
     
-    if (mission.length === 0) {
+    if (!mission) {
       return null;
     }
     
-    return mission[0];
+    // store_name 필드 추가하여 원래 쿼리 결과와 동일한 구조로 만듦
+    return {
+      ...mission,
+      store_name: mission.store?.name
+    };
   } catch (err) {
+    console.error(`미션 조회 오류: ${err.message}`);
     throw new Error(`미션 조회 중 오류가 발생했습니다: ${err.message}`);
-  } finally {
-    conn.release();
   }
 };
 
 // 사용자와 미션 ID로 이미 참여한 미션인지 확인
 export const getUserMissionByUserAndMission = async (userId, missionId) => {
-  const conn = await pool.getConnection();
-  
   try {
-    const [userMission] = await pool.query(
-      `SELECT * FROM user_mission WHERE user_id = ? AND mission_id = ?;`,
-      [userId, missionId]
-    );
+    const userMission = await prisma.user_mission.findFirst({
+      where: {
+        user_id: BigInt(userId),
+        mission_id: BigInt(missionId)
+      }
+    });
     
-    if (userMission.length === 0) {
-      return null;
-    }
-    
-    return userMission[0];
+    return userMission;
   } catch (err) {
+    console.error(`사용자 미션 조회 오류: ${err.message}`);
     throw new Error(`사용자 미션 조회 중 오류가 발생했습니다: ${err.message}`);
-  } finally {
-    conn.release();
   }
 };
 
 // 사용자 미션 추가
 export const addUserMission = async (userId, missionId) => {
-  const conn = await pool.getConnection();
-  
   try {
-    const [result] = await pool.query(
-      `INSERT INTO user_mission (user_id, mission_id, status, created_at, updated_at) 
-       VALUES (?, ?, '진행중', NOW(), NOW());`,
-      [userId, missionId]
-    );
+    const userMission = await prisma.user_mission.create({
+      data: {
+        user_id: BigInt(userId),
+        mission_id: BigInt(missionId),
+        status: '진행중',
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
     
-    return result.insertId;
+    return userMission.id;
   } catch (err) {
+    console.error(`사용자 미션 추가 오류: ${err.message}`);
     throw new Error(`사용자 미션 추가 중 오류가 발생했습니다: ${err.message}`);
-  } finally {
-    conn.release();
   }
 };
 
 // 사용자 미션 상세 정보 조회
 export const getUserMissionWithDetails = async (userMissionId) => {
-  const conn = await pool.getConnection();
-  
   try {
-    const [userMission] = await pool.query(
-      `SELECT um.*, m.reward, m.deadline, m.mission_spec, s.name as store_name
-       FROM user_mission um
-       JOIN mission m ON um.mission_id = m.id
-       JOIN store s ON m.store_id = s.id
-       WHERE um.id = ?;`,
-      [userMissionId]
-    );
+    const userMission = await prisma.user_mission.findUnique({
+      where: {
+        id: BigInt(userMissionId)
+      },
+      include: {
+        mission: {
+          select: {
+            reward: true,
+            deadline: true,
+            mission_spec: true,
+            store: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    });
     
-    if (userMission.length === 0) {
+    if (!userMission) {
       return null;
     }
     
-    return userMission[0];
+    // 원래 쿼리와 동일한 결과 구조로 변환
+    return {
+      ...userMission,
+      reward: userMission.mission?.reward,
+      deadline: userMission.mission?.deadline,
+      mission_spec: userMission.mission?.mission_spec,
+      store_name: userMission.mission?.store?.name
+    };
   } catch (err) {
+    console.error(`사용자 미션 상세 조회 오류: ${err.message}`);
     throw new Error(`사용자 미션 조회 중 오류가 발생했습니다: ${err.message}`);
-  } finally {
-    conn.release();
   }
 };
