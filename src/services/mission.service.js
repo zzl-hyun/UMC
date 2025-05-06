@@ -3,7 +3,8 @@ import {
   getMissionById, 
   getUserMissionByUserAndMission, 
   addUserMission,
-  getUserMissionWithDetails
+  getUserMissionWithDetails,
+  getStoreMissions
 } from "../repositories/mission.repository.js";
 import { getStoreById } from "../repositories/store.repository.js";
 import { responseFromMemberMission, responseFromMission } from "../dtos/mission.dto.js";
@@ -43,4 +44,24 @@ export const challengeMission = async (missionId, userData) => {
   const userMission = await getUserMissionWithDetails(userMissionId);
   
   return responseFromMemberMission(userMission);
+};
+
+// 특정 가게의 미션 목록 조회
+export const listStoreMissions = async (storeId, cursor = 0) => {
+  // 가게 존재 여부 확인
+  const store = await getStoreById(storeId);
+  if (!store) {
+    throw new Error("존재하지 않는 가게입니다.");
+  }
+  
+  // 가게의 미션 목록 조회
+  const missions = await getStoreMissions(storeId, cursor);
+  
+  // 응답 데이터 구성
+  return {
+    data: missions.map(mission => responseFromMission(mission)),
+    pagination: {
+      cursor: missions.length ? Number(missions[missions.length - 1].id) : null
+    }
+  };
 };

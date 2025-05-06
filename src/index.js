@@ -32,6 +32,7 @@ app.get("/api/stores/:storeId/reviews", storeController.handleListStoreReviews);
 // 미션 관련
 app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge", missionController.challengeMission);
+app.get("/api/stores/:storeId/missions", storeController.handleListStoreMissions);
 
 app.use((err, req, res, next) => {
   console.error(err);  // 로그 남기기

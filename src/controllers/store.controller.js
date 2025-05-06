@@ -71,3 +71,20 @@ export const handleListStoreReviews = async (req, res, next) => {
         next(err);
     }
 }
+
+export const handleListStoreMissions = async (req, res, next) => {
+    try {
+        const storeId = parseInt(req.params.storeId);
+        const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
+        
+        const result = await missionService.listStoreMissions(storeId, cursor);
+        
+        res.status(StatusCodes.OK).json({
+            status: 'success',
+            message: '가게 미션 목록을 성공적으로 조회했습니다.',
+            result
+        });
+    } catch (err) {
+        next(err);
+    }
+};
