@@ -6,11 +6,25 @@ import * as userController from "./controllers/user.controller.js";
 import * as storeController from "./controllers/store.controller.js";
 import * as missionController from "./controllers/mission.controller.js";
 import logger, { stream } from "./logger.js";  // stream 추가 임포트
+import compression from "compression";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT;
+
+// 응답 압축 미들웨어 설정
+app.use(compression({
+  threshold: 512,
+  level: 6,
+  filter: (req, res) => {
+    if (res.getHeader('Content-Type')) {
+      const contentType = res.getHeader('Content-Type');
+      return !/(?:^|,)\s*(?:image\/|audio\/|video\/|application\/zip)/i.test(contentType);
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 app.use(cors()); // cors 방식 허용
 app.use(express.static("public")); // 정적 파일 접근
