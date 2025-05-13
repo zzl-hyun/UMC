@@ -10,11 +10,7 @@ export const challengeMission = async (req, res, next) => {
     // 미션 도전하기
     const userMission = await missionService.challengeMission(missionId, bodyToChallengeMission(req.body));
     
-    res.status(StatusCodes.CREATED).json({
-      status: 'success',
-      message: '미션 도전이 성공적으로 추가되었습니다.',
-      data: userMission
-    });
+    res.status(StatusCodes.CREATED).success(userMission);
   } catch (err) {
     next(err);
   }
@@ -28,11 +24,7 @@ export const UpdateMissionStatus = async (req, res, next) => {
     
     const result = await missionService.updateMissionStatus(userMissionId, status);
     
-    res.status(StatusCodes.OK).json({
-      status: 'success',
-      message: `미션 상태가 '${status}'(으)로 성공적으로 업데이트되었습니다.`,
-      data: result
-    });
+    res.status(StatusCodes.OK).success(result);
   } catch (err) {
     next(err);
   }

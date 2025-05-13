@@ -11,11 +11,7 @@ export const createStore = async(req, res, next) => {
         const regionId = parseInt(req.params.regionId);
         const store = await storeService.createStore(regionId, bodyToStore(req.body));
 
-        res.status(StatusCodes.CREATED).json({ 
-            status: 'success',
-            message: '상점이 성공적으로 추가되었습니다.',
-            data: store 
-        });
+        res.status(StatusCodes.CREATED).success(store);
         
     } catch (err) {
         next(err);
@@ -29,11 +25,7 @@ export const createReview = async (req, res, next) => {
         // 리뷰 추가
         const review = await reviewService.createReview(storeId, bodyToReview(req.body));
         
-        res.status(StatusCodes.CREATED).json({
-            status: 'success',
-            message: '리뷰가 성공적으로 추가되었습니다.',
-            data: review
-        });
+        res.status(StatusCodes.CREATED).success(review);
     } catch (err) {
         next(err);
     }
@@ -45,11 +37,7 @@ export const createMission = async (req, res, next) => {
 
         const mission = await missionService.createMission(storeId, bodyToMission(req.body));
 
-        res.status(StatusCodes.CREATED).json({
-            status: 'success',
-            message: '미션이 성공적으로 추가되었습니다.',
-            data: mission
-        });
+        res.status(StatusCodes.CREATED).success(mission);
     } catch (err) {
         next(err);
     }
@@ -62,11 +50,7 @@ export const handleListStoreReviews = async (req, res, next) => {
         
         const result = await storeService.listStoreReviews(storeId, cursor);
         
-        res.status(StatusCodes.OK).json({
-            status: 'success',
-            message: '리뷰 목록을 성공적으로 조회했습니다.',
-            result
-        });
+        res.status(StatusCodes.OK).success(result);
     } catch (err) {
         next(err);
     }
@@ -79,11 +63,7 @@ export const handleListStoreMissions = async (req, res, next) => {
         
         const result = await missionService.listStoreMissions(storeId, cursor);
         
-        res.status(StatusCodes.OK).json({
-            status: 'success',
-            message: '가게 미션 목록을 성공적으로 조회했습니다.',
-            result
-        });
+        res.status(StatusCodes.OK).success(result);
     } catch (err) {
         next(err);
     }

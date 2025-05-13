@@ -25,11 +25,7 @@ export const handleListUserReviews = async (req, res, next) => {
     
     const result = await reviewService.listUserReviews(userId, cursor);
     
-    res.status(StatusCodes.OK).json({
-      status: 'success',
-      message: '내가 작성한 리뷰 목록을 성공적으로 조회했습니다.',
-      result
-    });
+    res.status(StatusCodes.OK).success(result);
   }catch (err){
     next(err);
   }
@@ -44,11 +40,7 @@ export const handleListUserMissions = async (req, res, next) => {
     
     const result = await missionService.listUserMissions(userId, cursor, status);
     
-    res.status(StatusCodes.OK).json({
-      status: 'success',
-      message: '내 미션 목록을 성공적으로 조회했습니다.',
-      result
-    });
+    res.status(StatusCodes.OK).success(result);
   } catch (err) {
     next(err);
   }
