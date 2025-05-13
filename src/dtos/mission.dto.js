@@ -15,7 +15,7 @@ export const bodyToChallengeMission = (body) => {
 export const responseFromMission = (mission) => {
     return {
         id: Number(mission.id),
-        storeId: mission.store_id ? Number(mission.store_id) : null,
+        storeId: mission.store_id ? String(mission.store_id) : null,
         storeName: mission.store_name || mission.store?.name || null,
         reward: mission.reward,
         deadline: mission.deadline,
@@ -27,9 +27,9 @@ export const responseFromMission = (mission) => {
 
 export const responseFromMemberMission = (memberMission) => {
     return {
-        id: Number(memberMission.id),
-        userId: memberMission.user_id ? Number(memberMission.user_id) : null, 
-        missionId: memberMission.mission_id ? Number(memberMission.mission_id) : null,
+        id: String(memberMission.id),
+        userId: memberMission.user_id ? String(memberMission.user_id) : null, 
+        missionId: memberMission.mission_id ? String(memberMission.mission_id) : null,
         status: memberMission.status,
         storeName: memberMission.store_name || null,
         missionSpec: memberMission.mission_spec || null,

@@ -19,11 +19,11 @@ export const bodyToReview = (body) => {
 // }
 export const responseFromSingleReview = (review) => {
     return {
-        id: Number(review.id),
+        id: String(review.id),
         body: review.body,
         score: review.score,
-        userId: review.user_id ? Number(review.user_id) : null,
-        storeId: review.store_id ? Number(review.store_id) : null,
+        userId: review.user_id ? String(review.user_id) : null,
+        storeId: review.store_id ? String(review.store_id) : null,
         createdAt: review.created_at,
         updatedAt: review.updated_at
     };
@@ -32,16 +32,16 @@ export const responseFromSingleReview = (review) => {
 export const responseFromReviews = (reviews) => {
     return {
         data: reviews.map(review => ({
-            id: Number(review.id),
+            id: String(review.id),
             body: review.body,
             score: review.score,
-            userId: review.user_id ? Number(review.user_id) : null,
-            storeId: review.store_id ? Number(review.store_id) : null,
+            userId: review.user_id ? String(review.user_id) : null,
+            storeId: review.store_id ? String(review.store_id) : null,
             createdAt: review.created_at,
             updatedAt: review.updated_at
         })),
         pagenation: {
-            cursor: reviews.length ? Number(reviews[reviews.length - 1].id) : null,
+            cursor: reviews.length ? String(reviews[reviews.length - 1].id) : null,
         }
     };
 };

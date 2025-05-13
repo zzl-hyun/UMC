@@ -1,4 +1,9 @@
 import { prisma } from "../db.config.js";
+import { 
+  StoreNotFoundError,
+  StoreCreationError,
+  StoreQueryError
+ } from "../error.js";
 // 상점 추가
 export const addStore = async (regionId, data) => {  
   try {
@@ -15,8 +20,24 @@ export const addStore = async (regionId, data) => {
     
     return store.id;
   } catch (err) {
-    throw new Error(`상점 추가 중 오류가 발생했습니다: ${err.message}`);
+    throw err;
   } 
+};
+
+// 이름과 주소로 상점 조회 (중복 체크용)
+export const findStoreByNameAndAddress = async (name, address) => {
+  try {
+    const store = await prisma.store.findFirst({
+      where: { 
+        name: name,
+        address: address
+      }
+    });
+    
+    return store;
+  } catch (err) {
+    throw err;
+  }
 };
 
 // 상점 조회
@@ -28,12 +49,9 @@ export const getStoreById = async (storeId) => {
         region: true
       }
     })
-    if (!store) {
-      throw new Error("존재하지 않는 상점입니다.");
-    }
     
-    return store.id;
+    return store;
   } catch (err) {
-    throw new Error(`상점 조회 중 오류가 발생했습니다: ${err.message}`);
+    throw err;
   } 
 };

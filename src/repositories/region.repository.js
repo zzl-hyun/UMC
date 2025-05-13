@@ -1,4 +1,5 @@
 import { prisma } from "../db.config.js";
+import { RegionNotFoundError } from "../error.js";
 // 지역 조회
 export const getRegionById = async (regionId) => {
   try {
@@ -6,12 +7,8 @@ export const getRegionById = async (regionId) => {
       where: { id: parseInt(regionId) }
     });
     
-    if (!region) {
-      throw new Error("존재하지 않는 지역입니다.");
-    }
-    
     return region;
   } catch (err) {
-    throw new Error(`지역 조회 중 오류가 발생했습니다: ${err.message}`);
+    throw err
   }
 };

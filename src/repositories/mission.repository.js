@@ -1,4 +1,5 @@
 import { prisma } from "../db.config.js";
+import { MissionNotFoundError, MissionQueryError } from "../error.js";
 
 // 미션 추가
 export const addMission = async (storeId, data) => {
@@ -17,7 +18,7 @@ export const addMission = async (storeId, data) => {
     return mission.id;
   } catch (err) {
     console.error(`미션 추가 오류: ${err.message}`);
-    throw new Error(`미션 추가 중 오류가 발생했습니다: ${err.message}`);
+    throw err;
   }
 };
 
@@ -25,30 +26,18 @@ export const addMission = async (storeId, data) => {
 export const getMissionById = async (missionId) => {
   try {
     const mission = await prisma.mission.findUnique({
-      where: {
-        id: BigInt(missionId)
-      },
-      include: {
-        store: {
-          select: {
-            name: true
-          }
-        }
-      }
+      where: { id: BigInt(missionId) },
+      include: { store: { select: { name: true } } }
     });
     
     if (!mission) {
-      return null;
+      throw new MissionNotFoundError(undefined, { missionId });
     }
     
-    // store_name 필드 추가하여 원래 쿼리 결과와 동일한 구조로 만듦
-    return {
-      ...mission,
-      store_name: mission.store?.name
-    };
+    return { ...mission, store_name: mission.store?.name };
   } catch (err) {
-    console.error(`미션 조회 오류: ${err.message}`);
-    throw new Error(`미션 조회 중 오류가 발생했습니다: ${err.message}`);
+    if (err instanceof MissionNotFoundError) throw err;
+    throw new MissionQueryError(undefined, { missionId, originalError: err.message });
   }
 };
 

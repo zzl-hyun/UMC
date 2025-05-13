@@ -10,17 +10,21 @@ import {
 } from "../repositories/mission.repository.js";
 import { getStoreById } from "../repositories/store.repository.js";
 import { responseFromMemberMission, responseFromMission } from "../dtos/mission.dto.js";
+import { MissionCreationError, MissionQueryError, StoreNotFoundError } from "../error.js";
 
 
 export const createMission = async (storeId, missionData) => {
   // 상점이 존재하는지 확인
-  await getStoreById(storeId);
+  const store = await getStoreById(storeId);
+  if(!store) throw new StoreNotFoundError(undefined, storeId);
 
   // 미션 생성
   const missionId = await addMission(storeId, missionData);
+  if(!missionId) throw new MissionCreationError(undefined, {storeId, missionData})
   
   // 생성된 미션 정보 조회
   const mission = await getMissionById(missionId);
+  if(!mission) throw new MissionQueryError(undefined, missionid);
   
   return responseFromMission(mission);
 };
