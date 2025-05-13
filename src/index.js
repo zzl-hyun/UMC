@@ -18,6 +18,24 @@ app.use(express.json()); // request의 본문을 json으로 해석할 수 있도
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 app.use(morgan(':method :url :status :response-time ms - :res[content-length]', { stream }));
 
+/**
+ * 공통 응답을 사용할 수 있는 헬퍼 함수 등록
+ */
+app.use((req, res, next) => {
+  res.success = (success) => {
+    return res.json({ resultType: "SUCCESS", error: null, success });
+  };
+
+  res.error = ({ errorCode = "unknown", reason = null, data = null }) => {
+    return res.json({
+      resultType: "FAIL",
+      error: { errorCode, reason, data },
+      success: null,
+    });
+  };
+
+  next();
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -38,14 +56,18 @@ app.post("/api/missions/:missionId/challenge", missionController.challengeMissio
 app.get("/api/stores/:storeId/missions", storeController.handleListStoreMissions);
 app.patch("/api/missions/:userMissionId/status", missionController.UpdateMissionStatus); 
 
+/**
+ * 전역 오류를 처리하기 위한 미들웨어
+ */
 app.use((err, req, res, next) => {
-  console.error(err);  // 로그 남기기
-  const status = err.status || 500;
-  res.status(status).json({
-    error: {
-      message: err.message || 'Internal Server Error',
-      status
-    }
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(err.statusCode || 500).error({
+    errorCode: err.errorCode || "unknown",
+    reason: err.reason || err.message || null,
+    data: err.data || null,
   });
 });
 
