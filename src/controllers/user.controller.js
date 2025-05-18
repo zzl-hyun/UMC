@@ -8,6 +8,8 @@ import * as missionService from "../services/mission.service.js";
 export const handleUserSignUp = async (req, res, next) => {
   /*
     #swagger.summary = '회원 가입 API';
+    #swagger.description = '새로운 사용자를 등록합니다. 이메일, 이름, 선호 카테고리 등의 정보가 필요합니다.';
+    #swagger.tags = ['User'];
     #swagger.requestBody = {
       required: true,
       content: {
@@ -15,15 +17,21 @@ export const handleUserSignUp = async (req, res, next) => {
           schema: {
             type: "object",
             properties: {
-              email: { type: "string" },
-              name: { type: "string" },
-              gender: { type: "string" },
-              birth: { type: "string", format: "date" },
-              address: { type: "string" },
-              detailAddress: { type: "string" },
-              phoneNumber: { type: "string" },
-              preferences: { type: "array", items: { type: "number" } }
-            }
+              email: { type: "string", example: "user@example.com", description: "사용자 이메일" },
+              name: { type: "string", example: "홍길동", description: "사용자 이름" },
+              gender: { type: "string", example: "남성", description: "성별", enum: ["남성", "여성"] },
+              birth: { type: "string", format: "date", example: "1990-01-01", description: "생년월일" },
+              address: { type: "string", example: "서울시 강남구", description: "주소" },
+              detailAddress: { type: "string", example: "역삼동 123-45", description: "상세 주소" },
+              phoneNumber: { type: "string", example: "010-1234-5678", description: "전화번호" },
+              preferences: { 
+                type: "array", 
+                items: { type: "number" }, 
+                example: [1, 3, 5],
+                description: "선호하는 카테고리 ID 목록" 
+              }
+            },
+            required: ["email", "name", "gender", "birth", "preferences"]
           }
         }
       }
@@ -40,9 +48,19 @@ export const handleUserSignUp = async (req, res, next) => {
               success: {
                 type: "object",
                 properties: {
-                  email: { type: "string" },
-                  name: { type: "string" },
-                  preferCategory: { type: "array", items: { type: "string" } }
+                  id: { type: "integer", example: 123 },
+                  email: { type: "string", example: "user@example.com" },
+                  name: { type: "string", example: "홍길동" },
+                  preferCategory: { 
+                    type: "array", 
+                    items: { 
+                      type: "object", 
+                      properties: {
+                        id: { type: "integer", example: 1 },
+                        name: { type: "string", example: "한식" }
+                      }
+                    } 
+                  }
                 }
               }
             }
@@ -62,7 +80,7 @@ export const handleUserSignUp = async (req, res, next) => {
                 type: "object",
                 properties: {
                   errorCode: { type: "string", example: "U001" },
-                  reason: { type: "string" },
+                  reason: { type: "string", example: "이미 존재하는 이메일입니다." },
                   data: { type: "object" }
                 }
               },
@@ -74,7 +92,6 @@ export const handleUserSignUp = async (req, res, next) => {
     };
   */
   try{
-
     console.log("회원가입을 요청했습니다!");
     console.log("body:", req.body); // 값이 잘 들어오나 확인하기 위한 테스트용
     
@@ -86,6 +103,88 @@ export const handleUserSignUp = async (req, res, next) => {
 };
 
 export const handleListUserReviews = async (req, res, next) => {
+  /*
+    #swagger.summary = '사용자 리뷰 목록 조회 API';
+    #swagger.description = '특정 사용자가 작성한 리뷰 목록을 조회합니다.';
+    #swagger.tags = ['User', 'Review'];
+    #swagger.parameters['userId'] = {
+      in: 'path',
+      description: '사용자 ID',
+      required: true,
+      type: 'integer',
+      example: 1
+    };
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: '페이지네이션 커서 (다음 페이지 조회 시 이전 응답의 cursor 값 사용)',
+      required: false,
+      type: 'integer',
+      example: 0
+    };
+    #swagger.responses[200] = {
+      description: "사용자 리뷰 목록 조회 성공 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "SUCCESS" },
+              error: { type: "object", nullable: true, example: null },
+              success: {
+                type: "object",
+                properties: {
+                  data: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: { type: "string", example: "123" },
+                        body: { type: "string", example: "맛있는 음식이었습니다." },
+                        score: { type: "number", example: 4.5 },
+                        userId: { type: "string", example: "1" },
+                        storeId: { type: "string", example: "42" },
+                        storeName: { type: "string", example: "맛있는 식당" },
+                        createdAt: { type: "string", format: "date-time", example: "2025-05-01T12:34:56Z" },
+                        updatedAt: { type: "string", format: "date-time", example: "2025-05-01T12:34:56Z" }
+                      }
+                    }
+                  },
+                  pagination: {
+                    type: "object",
+                    properties: {
+                      cursor: { type: "integer", nullable: true, example: 456 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[404] = {
+      description: "사용자를 찾을 수 없음",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "U002" },
+                  reason: { type: "string", example: "사용자를 찾을 수 없습니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+  */
   try{
     const userId = parseInt(req.params.userId);
     const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
@@ -98,8 +197,122 @@ export const handleListUserReviews = async (req, res, next) => {
   }
 };
 
-// 내가 진행 중인 미션 목록 조회
 export const handleListUserMissions = async (req, res, next) => {
+  /*
+    #swagger.summary = '사용자 미션 목록 조회 API';
+    #swagger.description = '특정 사용자의 미션 목록을 조회합니다. 상태별 필터링이 가능합니다.';
+    #swagger.tags = ['User', 'Mission'];
+    #swagger.parameters['userId'] = {
+      in: 'path',
+      description: '사용자 ID',
+      required: true,
+      type: 'integer',
+      example: 1
+    };
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: '페이지네이션 커서 (다음 페이지 조회 시 이전 응답의 cursor 값 사용)',
+      required: false,
+      type: 'integer',
+      example: 0
+    };
+    #swagger.parameters['status'] = {
+      in: 'query',
+      description: '미션 상태 필터',
+      required: false,
+      type: 'string',
+      enum: ['진행중', '완료', '포기', '실패'],
+      default: '진행중',
+      example: '진행중'
+    };
+    #swagger.responses[200] = {
+      description: "미션 목록 조회 성공 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "SUCCESS" },
+              error: { type: "object", nullable: true, example: null },
+              success: {
+                type: "object",
+                properties: {
+                  data: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: { type: "integer", example: 123 },
+                        userId: { type: "integer", example: 1 },
+                        missionId: { type: "integer", example: 456 },
+                        status: { type: "string", example: "진행중" },
+                        storeName: { type: "string", example: "맛있는 식당" },
+                        missionSpec: { type: "string", example: "햄버거 메뉴 리뷰 작성하기" },
+                        reward: { type: "string", example: "포인트 500점" },
+                        deadline: { type: "string", format: "date-time", example: "2025-06-30T23:59:59Z" },
+                        createdAt: { type: "string", format: "date-time", example: "2025-05-01T12:34:56Z" },
+                        updatedAt: { type: "string", format: "date-time", example: "2025-05-01T12:34:56Z" }
+                      }
+                    }
+                  },
+                  pagination: {
+                    type: "object",
+                    properties: {
+                      cursor: { type: "integer", nullable: true, example: 456 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[404] = {
+      description: "사용자를 찾을 수 없음",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "U002" },
+                  reason: { type: "string", example: "사용자를 찾을 수 없습니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[500] = {
+      description: "서버 오류 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "S001" },
+                  reason: { type: "string", example: "서버 내부 오류가 발생했습니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+  */
   try {
     const userId = parseInt(req.params.userId);
     const cursor = req.query.cursor ? parseInt(req.query.cursor) : 0;
