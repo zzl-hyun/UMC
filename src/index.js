@@ -7,6 +7,8 @@ import * as storeController from "./controllers/store.controller.js";
 import * as missionController from "./controllers/mission.controller.js";
 import logger, { stream } from "./logger.js";  // stream 추가 임포트
 import compression from "compression";
+import swaggerAutogen from "swagger-autogen";
+import swaggerUiExpress from "swagger-ui-express";
 
 dotenv.config();
 
@@ -31,6 +33,15 @@ app.use(express.static("public")); // 정적 파일 접근
 app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 app.use(morgan(':method :url :status :response-time ms - :res[content-length]', { stream }));
+app.use(
+  "/docs",
+  swaggerUiExpress.serve,
+  swaggerUiExpress.setup({}, {
+    swaggerOptions: {
+      url: "/openapi.json",
+    },
+  })
+);
 // BigInt 직렬화 지원 추가
 BigInt.prototype.toJSON = function() {
   return this.toString();
@@ -56,6 +67,26 @@ app.use((req, res, next) => {
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
+});
+app.get("/openapi.json", async (req, res, next) => {
+  // #swagger.ignore = true
+  const options = {
+    openapi: "3.0.0",
+    disableLogs: true,
+    writeOutputFile: false,
+  };
+  const outputFile = "/dev/null"; // 파일 출력은 사용하지 않습니다.
+  const routes = ["./src/index.js"];
+  const doc = {
+    info: {
+      title: "UMC 7th",
+      description: "UMC 7th Node.js 테스트 프로젝트입니다.",
+    },
+    host: "localhost:3000",
+  };
+
+  const result = await swaggerAutogen(options)(outputFile, routes, doc);
+  res.json(result ? result.data : null);
 });
 
 // 사용자 관련
