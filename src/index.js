@@ -14,6 +14,7 @@ import session from "express-session";
 import passport from "passport";
 import { googleStrategy, kakaoStrategy } from "./auth/auth.config.js";
 import { prisma } from "./db.config.js";
+import { requireAuth } from "./utils/Auth.util.js";
 
 dotenv.config();
 
@@ -125,6 +126,7 @@ app.get("/openapi.json", async (req, res, next) => {
 
 // 사용자 관련
 app.post("/api/users/signup", userController.handleUserSignUp);
+app.patch("/api/users/profile", requireAuth, userController.handleUpdateProfile); 
 app.get("/api/users/:userId/reviews", userController.handleListUserReviews);
 app.get("/api/users/:userId/missions", userController.handleListUserMissions); 
 // 지역 및 상점 관련

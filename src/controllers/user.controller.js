@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import { bodyToUser } from "../dtos/user.dto.js";
-import { userSignUp } from "../services/user.service.js";
+import { bodyToUser, bodyToUpdateProfile } from "../dtos/user.dto.js";
+import { userSignUp, updateProfile } from "../services/user.service.js";
 import * as reviewService from "../services/review.service.js"
 import * as missionService from "../services/mission.service.js";
 
@@ -98,6 +98,135 @@ export const handleUserSignUp = async (req, res, next) => {
     const user = await userSignUp(bodyToUser(req.body));
     res.status(StatusCodes.OK).success(user);
   }catch(err){
+    next(err);
+  }
+};
+
+
+export const handleUpdateProfile = async (req, res, next) => {
+  /*
+    #swagger.summary = '사용자 프로필 업데이트 API';
+    #swagger.description = '로그인한 사용자의 프로필 정보를 업데이트합니다. OAuth 로그인 후 부족한 정보를 채울 때 사용합니다.';
+    #swagger.tags = ['User'];
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              name: { type: "string", example: "홍길동", description: "사용자 이름" },
+              gender: { type: "string", example: "남성", description: "성별", enum: ["남성", "여성", "미설정"] },
+              birth: { type: "string", format: "date", example: "1990-01-01", description: "생년월일" },
+              address: { type: "string", example: "서울시 강남구", description: "주소" },
+              detailAddress: { type: "string", example: "역삼동 123-45", description: "상세 주소" },
+              phoneNumber: { type: "string", example: "010-1234-5678", description: "전화번호" },
+              preferences: { 
+                type: "array", 
+                items: { type: "number" }, 
+                example: [1, 3, 5],
+                description: "선호하는 카테고리 ID 목록 (선택사항)" 
+              }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[200] = {
+      description: "프로필 업데이트 성공 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "SUCCESS" },
+              error: { type: "object", nullable: true, example: null },
+              success: {
+                type: "object",
+                properties: {
+                  id: { type: "integer", example: 123 },
+                  email: { type: "string", example: "user@example.com" },
+                  name: { type: "string", example: "홍길동" },
+                  gender: { type: "string", example: "남성" },
+                  birth: { type: "string", format: "date", example: "1990-01-01" },
+                  address: { type: "string", example: "서울시 강남구" },
+                  detailAddress: { type: "string", example: "역삼동 123-45" },
+                  phoneNumber: { type: "string", example: "010-1234-5678" },
+                  preferCategory: { 
+                    type: "array", 
+                    items: { 
+                      type: "object", 
+                      properties: {
+                        id: { type: "integer", example: 1 },
+                        name: { type: "string", example: "한식" }
+                      }
+                    } 
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[401] = {
+      description: "인증 필요",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "UNAUTHORIZED" },
+                  reason: { type: "string", example: "로그인이 필요합니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[404] = {
+      description: "사용자를 찾을 수 없음",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "U002" },
+                  reason: { type: "string", example: "존재하지 않는 사용자입니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+  */
+  try {
+    const userId = req.user.id; // 현재 로그인한 사용자 ID
+    
+    // 프로필 데이터와 선호 카테고리 분리
+    const updateData = {
+      profileData: bodyToUpdateProfile(req.body),
+      preferences: req.body.preferences
+    };
+    
+    const updatedUser = await updateProfile(userId, updateData);
+    
+    res.status(StatusCodes.OK).success(updatedUser);
+  } catch (err) {
     next(err);
   }
 };

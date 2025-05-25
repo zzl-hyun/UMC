@@ -35,3 +35,17 @@ export const responseFromUser = ({user, preferences}) => {
     };
 
 };
+
+export const bodyToUpdateProfile = (body) => {
+    const updateData = {};
+    
+    // 선택적으로 업데이트할 수 있는 필드들
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.gender !== undefined) updateData.gender = body.gender;
+    if (body.birth !== undefined) updateData.birth = new Date(body.birth);
+    if (body.address !== undefined) updateData.address = body.address;
+    if (body.detailAddress !== undefined) updateData.detailAddress = body.detailAddress;
+    if (body.phoneNumber !== undefined) updateData.phoneNumber = body.phoneNumber;
+    
+    return updateData;
+};
