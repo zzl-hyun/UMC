@@ -1,14 +1,30 @@
 import { prisma } from "../db.config.js";
 
-// User 데이터 삽입
+// User 데이터 삽입 (비밀번호 포함)
 export const addUser = async (data) => {
   const user = await prisma.user.findFirst({ where: { email: data.email } });
   if (user) {
     return null;
   }
 
-  const created = await prisma.user.create({ data: data });
+  const created = await prisma.user.create({ 
+    data: {
+      ...data,
+      social_type: "LOCAL" // 일반 회원가입은 LOCAL로 설정
+    } 
+  });
   return created.id;
+};
+
+// 이메일로 사용자 조회 (로그인용)
+export const getUserByEmail = async (email) => {
+  const user = await prisma.user.findFirst({ 
+    where: { 
+      email: email,
+      status: 'ACTIVE'
+    } 
+  });
+  return user;
 };
 
 // 사용자 정보 얻기
@@ -57,7 +73,7 @@ export const updateUserProfile = async (userId, updateData) => {
         return updatedUser.id;
     } catch (err) {
         if (err.code === 'P2025') {
-            return null; // 사용자를 찾을 수 없음
+            return null;
         }
         throw new Error(`사용자 프로필 업데이트 중 오류가 발생했습니다: ${err.message}`);
     }
@@ -66,12 +82,10 @@ export const updateUserProfile = async (userId, updateData) => {
 // 사용자 선호 카테고리 업데이트
 export const updateUserPreferences = async (userId, preferences) => {
     try {
-        // 기존 선호 카테고리 삭제
         await prisma.userFavorCategory.deleteMany({
             where: { user_id: BigInt(userId) }
         });
         
-        // 새로운 선호 카테고리 추가
         if (preferences && preferences.length > 0) {
             const preferenceData = preferences.map(categoryId => ({
                 user_id: BigInt(userId),
@@ -86,5 +100,25 @@ export const updateUserPreferences = async (userId, preferences) => {
         return true;
     } catch (err) {
         throw new Error(`사용자 선호 카테고리 업데이트 중 오류가 발생했습니다: ${err.message}`);
+    }
+};
+
+// 비밀번호 업데이트
+export const updateUserPassword = async (userId, hashedPassword) => {
+    try {
+        const updatedUser = await prisma.user.update({
+            where: { id: BigInt(userId) },
+            data: {
+                password: hashedPassword,
+                updated_at: new Date()
+            }
+        });
+        
+        return updatedUser.id;
+    } catch (err) {
+        if (err.code === 'P2025') {
+            return null;
+        }
+        throw new Error(`비밀번호 업데이트 중 오류가 발생했습니다: ${err.message}`);
     }
 };

@@ -18,6 +18,7 @@ model User {
   phoneNumber         String?             @map("phone_number") @db.VarChar(13)
   status              String?             @default("active") @db.VarChar(15)
   inactive_date       DateTime?           @db.DateTime(6)
+  password            String?             @db.VarChar(255)
   social_type         String?             @db.VarChar(10)
   created_at          DateTime?           @default(now()) @db.DateTime(6)
   updated_at          DateTime?           @default(now()) @db.DateTime(6)

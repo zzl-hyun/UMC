@@ -454,3 +454,122 @@ export const handleListUserMissions = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const handleChangePassword = async (req, res, next) => {
+  /*
+    #swagger.summary = '비밀번호 변경 API';
+    #swagger.description = '로그인한 사용자의 비밀번호를 변경합니다.';
+    #swagger.tags = ['User'];
+    #swagger.requestBody = {
+      required: true,
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              currentPassword: { type: "string", example: "OldPassword123!", description: "현재 비밀번호" },
+              newPassword: { type: "string", example: "NewPassword123!", description: "새 비밀번호 (8-50자, 영문 대소문자, 숫자, 특수문자 포함)" },
+              confirmPassword: { type: "string", example: "NewPassword123!", description: "새 비밀번호 확인" }
+            },
+            required: ["currentPassword", "newPassword", "confirmPassword"]
+          }
+        }
+      }
+    };
+    #swagger.responses[200] = {
+      description: "비밀번호 변경 성공 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "SUCCESS" },
+              error: { type: "object", nullable: true, example: null },
+              success: {
+                type: "object",
+                properties: {
+                  message: { type: "string", example: "비밀번호가 성공적으로 변경되었습니다." }
+                }
+              }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[400] = {
+      description: "비밀번호 변경 실패 응답",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "U003" },
+                  reason: { type: "string", example: "현재 비밀번호가 올바르지 않습니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+    #swagger.responses[401] = {
+      description: "인증 필요",
+      content: {
+        "application/json": {
+          schema: {
+            type: "object",
+            properties: {
+              resultType: { type: "string", example: "FAIL" },
+              error: {
+                type: "object",
+                properties: {
+                  errorCode: { type: "string", example: "UNAUTHORIZED" },
+                  reason: { type: "string", example: "로그인이 필요합니다." },
+                  data: { type: "object" }
+                }
+              },
+              success: { type: "object", nullable: true, example: null }
+            }
+          }
+        }
+      }
+    };
+  */
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword, confirmPassword } = bodyToChangePassword(req.body);
+
+    // 새 비밀번호와 확인 비밀번호 일치 확인
+    if (newPassword !== confirmPassword) {
+      return res.status(StatusCodes.BAD_REQUEST).error({
+        errorCode: "U003",
+        reason: "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.",
+        data: null
+      });
+    }
+
+    // 새 비밀번호 유효성 검사
+    if (!validatePassword(newPassword)) {
+      return res.status(StatusCodes.BAD_REQUEST).error({
+        errorCode: "U004",
+        reason: "새 비밀번호는 8-50자이며, 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.",
+        data: null
+      });
+    }
+
+    await changePassword(userId, currentPassword, newPassword);
+
+    res.status(StatusCodes.OK).success({
+      message: "비밀번호가 성공적으로 변경되었습니다."
+    });
+  } catch (err) {
+    next(err);
+  }
+};
