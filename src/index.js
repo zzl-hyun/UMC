@@ -12,12 +12,13 @@ import swaggerUiExpress from "swagger-ui-express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
-import { googleStrategy } from "./auth/auth.config.js";
+import { googleStrategy, kakaoStrategy } from "./auth/auth.config.js";
 import { prisma } from "./db.config.js";
 
 dotenv.config();
 
 passport.use(googleStrategy);
+passport.use(kakaoStrategy);
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
@@ -136,14 +137,21 @@ app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge", missionController.challengeMission);
 app.get("/api/stores/:storeId/missions", storeController.handleListStoreMissions);
 app.patch("/api/missions/:userMissionId/status", missionController.UpdateMissionStatus); 
-// OAuth2 관련
+
+// OAuth2
+// Google OAuth 라우트 추가
 app.get("/oauth2/login/google", passport.authenticate("google"));
-app.get("/oauth2/google/callback",passport.authenticate("google", {
+app.get("/oauth2/google/callback", passport.authenticate("google", {
   failureRedirect: "/oauth2/login/google",
-    failureMessage: true,
-  }),
-  (req, res) => res.redirect("/")
-);
+  failureMessage: true,
+}), (req, res) => res.redirect("/"));
+// Kakao OAuth 라우트 추가
+app.get("/oauth2/login/kakao", passport.authenticate("kakao"));
+app.get("/oauth2/kakao/callback", passport.authenticate("kakao", {
+  failureRedirect: "/oauth2/login/kakao",
+  failureMessage: true,
+}), (req, res) => res.redirect("/"));
+
 /**
  * 전역 오류를 처리하기 위한 미들웨어
  */
