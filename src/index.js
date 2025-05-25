@@ -9,11 +9,20 @@ import logger, { stream } from "./logger.js";  // stream 추가 임포트
 import compression from "compression";
 import swaggerAutogen from "swagger-autogen";
 import swaggerUiExpress from "swagger-ui-express";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import session from "express-session";
+import passport from "passport";
+import { googleStrategy } from "./auth/auth.config.js";
+import { prisma } from "./db.config.js";
 
 dotenv.config();
 
-const app = express();
+passport.use(googleStrategy);
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
 const port = process.env.PORT;
+const app = express();
 
 // 응답 압축 미들웨어 설정
 app.use(compression({
@@ -42,10 +51,33 @@ app.use(
     },
   })
 );
-// BigInt 직렬화 지원 추가
+
+/**
+ * 세션 설정
+ */
+app.use(
+  session({
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+    },
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    store: new PrismaSessionStore(prisma, {
+      checkPeriod: 2 * 60 * 1000, // ms
+      dbRecordIdIsSessionId: true,
+      dbRecordIdFunction: undefined,
+    }),
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 BigInt.prototype.toJSON = function() {
   return this.toString();
 };
+
 /**
  * 공통 응답을 사용할 수 있는 헬퍼 함수 등록
  */
@@ -66,6 +98,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
+  console.log(req.user);
   res.send("Hello World!");
 });
 app.get("/openapi.json", async (req, res, next) => {
@@ -103,7 +136,14 @@ app.post("/api/stores/:storeId/missions", storeController.createMission);
 app.post("/api/missions/:missionId/challenge", missionController.challengeMission);
 app.get("/api/stores/:storeId/missions", storeController.handleListStoreMissions);
 app.patch("/api/missions/:userMissionId/status", missionController.UpdateMissionStatus); 
-
+// OAuth2 관련
+app.get("/oauth2/login/google", passport.authenticate("google"));
+app.get("/oauth2/google/callback",passport.authenticate("google", {
+  failureRedirect: "/oauth2/login/google",
+    failureMessage: true,
+  }),
+  (req, res) => res.redirect("/")
+);
 /**
  * 전역 오류를 처리하기 위한 미들웨어
  */
